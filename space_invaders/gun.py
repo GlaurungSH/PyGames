@@ -11,7 +11,19 @@ class Gun():
         self.screen_rect = screen.get_rect()  # Getting our screen object
         self.rect.centerx = self.screen_rect.centerx  # Cannon on X coordinate exactly in the center of the screen
         self.rect.bottom = self.screen_rect.bottom  # Cannon in Y coordinate at the bottom of the screen
+        self.mright = False  # Movement of the gun to the right only when the key is pressed
+        self.mleft = False  # Movement of the gun to the left
 
     def output_gun(self):
         """Drawing a gun on the screen"""
         self.screen.blit(self.image, self.rect)
+
+    def update_gun(self):
+        """Gun position update"""
+        if self.mright and self.rect.right < self.screen_rect.right:  # if self.mright == True and ->
+            # -> The x-coordinate of the right edge of the gun must be less than ->
+            # -> the x-coordinate of the right edge of the display
+            self.rect.centerx += 2
+        elif self.mleft and self.rect.left > 0:  # to move left
+            self.rect.centerx -= 2
+
