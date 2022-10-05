@@ -1,6 +1,7 @@
 import pygame
 import controls
 from gun import Gun
+from pygame.sprite import Group
 
 
 def run():
@@ -10,13 +11,13 @@ def run():
     pygame.display.set_caption('Space Invaders')  # Title for the graphics window
     bg_color = (0, 0, 0)  # Window background color -> Black
     gun = Gun(screen)  # Draw the gun object on the graphics screen
+    bullets = Group()  # Create a bullet container
 
     while True:
-        controls.events(gun)  # We move the gun
+        controls.events(screen, gun, bullets)
         gun.update_gun()  # Gun position update
-        screen.fill(bg_color)
-        gun.output_gun()
-        pygame.display.flip()  # We draw the last screen so that after the loop ends there is no empty window
+        controls.update_screen(bg_color, screen, gun, bullets)  # Screen update
+        controls.update_bullets(bullets)  # Bullet position update
 
 
 run()
