@@ -12,12 +12,15 @@ def run():
     bg_color = (0, 0, 0)  # Window background color -> Black
     gun = Gun(screen)  # Draw the gun object on the graphics screen
     bullets = Group()  # Create a bullet container
+    aliens = Group()
+    controls.create_army(screen, aliens)
 
     while True:
         controls.events(screen, gun, bullets)
         gun.update_gun()  # Gun position update
-        controls.update_screen(bg_color, screen, gun, bullets)  # Screen update
+        controls.update_screen(bg_color, screen, gun, aliens, bullets)  # Screen update
         controls.update_bullets(bullets)  # Bullet position update
+        controls.update_aliens(aliens)  # Aliens position update
 
 
 run()
