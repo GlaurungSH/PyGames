@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 from bullet import Bullet
 from aliens import Alien
 
@@ -35,7 +36,7 @@ def update_screen(bg_color, screen, gun, aliens, bullets):
     pygame.display.flip()  # We draw the last screen so that after the loop ends there is no empty window
 
 
-def update_bullets(bullets):
+def update_bullets(screen, aliens, bullets):
     """Bullet position update"""
     bullets.update()
     for bullet in bullets.copy():
@@ -44,10 +45,44 @@ def update_bullets(bullets):
             # Since the bullet continues to move along the Y coordinate after the end of the screen (occupies memory)
     # print(len(bullets))  -> Checking if bullets are being removed
 
+    collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)  # Checking collisions ->
+    # (bullets hitting aliens or aliens hitting a cannon)
+    # True, True -> We remove the bullet and the alien.
+    # False, True -> We remove only alien.
+    if len(aliens) == 0:  # Create a new alien army if the player destroyed the previous one
+        bullets.empty()
+        create_army(screen, aliens)
 
-def update_aliens(aliens):
+
+def gun_kill(stats, screen, gun, aliens, bullets):
+    """Clash of guns and aliens"""
+    stats.guns_left -= 1  # Removing one life on collision
+    aliens.empty()  # Reset the aliens on the screen
+    bullets.empty()  # Reset the bullets on the screen
+    create_army(screen, aliens)  # Re-create the aliens on the screen
+    gun.create_gun()  # Re-create the gun on the screen
+    time.sleep(1)  # Reboot after 1 seconds
+
+
+def update_aliens(stats, screen, gun, aliens, bullets):
     """Alien position update"""
     aliens.update()
+
+    if pygame.sprite.spritecollideany(gun, aliens):  # Checking if the alien object overlaps the cannon object
+        gun_kill(stats, screen, gun, aliens, bullets)
+
+    aliens_check(stats, screen, gun, aliens, bullets)
+
+
+def aliens_check(stats, screen, gun, aliens, bullets):
+    """Checking if the alien army has reached the edge of the screen"""
+    screen_rect = screen.get_rect()  # Get the screen rectangle
+
+    for alien in aliens.sprites():
+        if alien.rect.bottom >= screen_rect.bottom:
+            gun_kill(stats, screen, gun, aliens, bullets)
+            break  # If at least one alien has reached the edge of the screen, ->
+            # we stop the loop, since we do not need to go through other aliens
 
 
 def create_army(screen, aliens):

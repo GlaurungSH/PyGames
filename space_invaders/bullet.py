@@ -9,7 +9,7 @@ class Bullet(pygame.sprite.Sprite):
         self.screen = screen
         self.rect = pygame.Rect(0, 0, 2, 12)  # Create a bullet - initial position coordinates and size in pixels
         self.color = 30, 230, 86  # Bullet color
-        self.speed = 1.5  # Bullet speed. The rate of change of position along the Y coordinate
+        self.speed = 4.5  # Bullet speed. The rate of change of position along the Y coordinate
         self.rect.centerx = gun.rect.centerx  # The appearance of a bullet at the top of the gun
         self.rect.top = gun.rect.top
         self.y = float(self.rect.y)  # The ability of the rect attribute to accept float numbers
