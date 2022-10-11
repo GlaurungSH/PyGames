@@ -1,10 +1,12 @@
 import pygame
+from pygame.sprite import Sprite
 
 
-class Gun():
+class Gun(Sprite):
 
     def __init__(self, screen):
         """Initialize a gun"""
+        super(Gun, self).__init__()
         self.screen = screen  # Getting our screen
         self.image = pygame.image.load('images/laser_gun.png')
         self.rect = self.image.get_rect()  # We get the image of the gun as a rectangle

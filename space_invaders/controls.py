@@ -25,9 +25,10 @@ def events(screen, gun, bullets):
                 gun.mleft = False
 
 
-def update_screen(bg_color, screen, gun, aliens, bullets):
+def update_screen(bg_color, screen, stats, player_score, gun, aliens, bullets):
     """Screen update"""
     screen.fill(bg_color)
+    player_score.show_score()  # Show score screen
     for bullet in bullets.sprites():  # Draw the bullets in front of the cannon ->
         # -> so that the bullets are not on top of the cannon on the screen
         bullet.draw_bullet()
@@ -36,7 +37,7 @@ def update_screen(bg_color, screen, gun, aliens, bullets):
     pygame.display.flip()  # We draw the last screen so that after the loop ends there is no empty window
 
 
-def update_bullets(screen, aliens, bullets):
+def update_bullets(screen, stats, player_score, aliens, bullets):
     """Bullet position update"""
     bullets.update()
     for bullet in bullets.copy():
@@ -49,38 +50,51 @@ def update_bullets(screen, aliens, bullets):
     # (bullets hitting aliens or aliens hitting a cannon)
     # True, True -> We remove the bullet and the alien.
     # False, True -> We remove only alien.
+    if collisions:
+        for aliens in collisions.values():
+            stats.score += 10 * len(aliens) # +10 points for each alien
+        player_score.image_score()
+        check_high_score(stats, player_score)  # Check if the record is broken
+        player_score.image_lives()  # Bringing life to the screen
+
     if len(aliens) == 0:  # Create a new alien army if the player destroyed the previous one
         bullets.empty()
         create_army(screen, aliens)
 
 
-def gun_kill(stats, screen, gun, aliens, bullets):
+def gun_kill(stats, screen, player_score, gun, aliens, bullets):
     """Clash of guns and aliens"""
-    stats.guns_left -= 1  # Removing one life on collision
-    aliens.empty()  # Reset the aliens on the screen
-    bullets.empty()  # Reset the bullets on the screen
-    create_army(screen, aliens)  # Re-create the aliens on the screen
-    gun.create_gun()  # Re-create the gun on the screen
-    time.sleep(1)  # Reboot after 1 seconds
+    if stats.guns_left > 0:
+        stats.guns_left -= 1  # Removing one life on collision
+        player_score.image_lives()
+        aliens.empty()  # Reset the aliens on the screen
+        bullets.empty()  # Reset the bullets on the screen
+        create_army(screen, aliens)  # Re-create the aliens on the screen
+        gun.create_gun()  # Re-create the gun on the screen
+        time.sleep(1)  # Reboot after 1 seconds
+    else:
+        stats.run_game = False
+        sys.exit()
 
 
-def update_aliens(stats, screen, gun, aliens, bullets):
+def update_aliens(stats, screen, player_score, gun, aliens, bullets):
     """Alien position update"""
     aliens.update()
 
+
     if pygame.sprite.spritecollideany(gun, aliens):  # Checking if the alien object overlaps the cannon object
-        gun_kill(stats, screen, gun, aliens, bullets)
+        gun_kill(stats, screen, player_score, gun, aliens, bullets)
 
-    aliens_check(stats, screen, gun, aliens, bullets)
+    aliens_check(stats, screen, player_score, gun, aliens, bullets)
 
 
-def aliens_check(stats, screen, gun, aliens, bullets):
+def aliens_check(stats, screen, player_score, gun, aliens, bullets):
     """Checking if the alien army has reached the edge of the screen"""
     screen_rect = screen.get_rect()  # Get the screen rectangle
 
     for alien in aliens.sprites():
         if alien.rect.bottom >= screen_rect.bottom:
-            gun_kill(stats, screen, gun, aliens, bullets)
+            gun_kill(stats, screen, player_score, gun, aliens, bullets)
             break  # If at least one alien has reached the edge of the screen, ->
             # we stop the loop, since we do not need to go through other aliens
 
@@ -101,3 +115,12 @@ def create_army(screen, aliens):
             alien.rect.x = alien.x
             alien.rect.y = alien.rect.height + (alien.rect.height * raw_number)
             aliens.add(alien)  # Adding created aliens to the group
+
+def check_high_score(stats, player_score):
+    """Checking new records"""
+    if stats.score > stats.high_score:
+        stats.high_score = stats.score
+        player_score.image_high_score()
+
+        with open('highscore.txt', 'w') as f:
+            f.write(str(stats.high_score))
